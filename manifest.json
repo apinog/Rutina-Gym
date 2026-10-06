@@ -1,6 +1,6 @@
 {
-  "name": "Mi rutina",
-  "short_name": "Mi rutina",
+  "name": "Rutina Gym",
+  "short_name": "Rutina Gym",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
