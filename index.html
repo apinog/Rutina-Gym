@@ -262,7 +262,7 @@ var PROGRAMS = {
   },
   m3: {
     name:'Mes 3', level:'Avanzado',
-    desc:'Superseries: ejercicios que se hacen seguidos, uno tras otro.',
+    desc:'Ejercicios agrupados en bloques numerados.',
     days:[
       {focus:'Pecho, espalda y abdomen', sections:[
         {type:'strength', title:'Rutina', blocks:[
@@ -337,8 +337,8 @@ var PROGRAMS = {
 var SHORT = {'Pecho, espalda y abdomen':'Pecho','Pecho y tríceps':'Pecho','Espalda y bíceps':'Espalda','Hombros y abdomen':'Hombros','Femoral y glúteo':'Glúteo'};
 
 var EXPLAIN = {
-  asc:'<b>Ascendente:</b> vas de menor a mayor peso en cada tramo (10 + 10 + 10), sin descansar entre tramos. Descansá 2 a 3 minutos al terminar la serie.',
-  desc:'<b>Descendente:</b> vas de mayor a menor peso. Descansá 2 a 3 minutos entre series.'
+  asc:'<b>Ascendente:</b> vas de menor a mayor peso, siempre ejecutando correctamente el ejercicio. Descanso de 2 a 3 minutos por serie.',
+  desc:'<b>Descendente:</b> vas de mayor a menor peso, siempre ejecutando correctamente el ejercicio. Descanso de 2 a 3 minutos por serie.'
 };
 
 // ---------- Estado ----------
@@ -424,7 +424,7 @@ function setsHTML(s){
 }
 function tempoText(t){
   var p=t.split('.');
-  return '<b>Tempo '+t+':</b> bajá el peso en '+p[0]+' s, pausa de '+p[1]+' s abajo, subí en '+p[2]+' s'+(p[3]!=='0'?', y apretá '+p[3]+' s arriba.':' y seguí sin pausa.');
+  return '<b>Tempo '+t+':</b> bajás el peso en '+p[0]+' s; '+(p[1]==='0'?'no descansás':'parás '+p[1]+' s')+' al estirar el músculo; subís el peso en '+p[2]+' s; '+(p[3]==='0'?'no parás':'parás '+p[3]+' s')+' al contraerlo.';
 }
 var uid=0;
 function exHTML(e,solo){
@@ -432,7 +432,7 @@ function exHTML(e,solo){
   if(e.mode){ var id='x'+(uid++); tags+='<button class="tag" data-act="exp" data-id="'+id+'">'+(e.mode==='asc'?IC.arrow+'Ascendente':IC.down+'Descendente')+'</button>'; exps+='<div class="explain" id="'+id+'">'+EXPLAIN[e.mode]+'</div>'; }
   if(e.tempo){ var id2='x'+(uid++); tags+='<button class="tag" data-act="exp" data-id="'+id2+'">'+IC.clock+'Tempo '+e.tempo+'</button>'; exps+='<div class="explain" id="'+id2+'">'+tempoText(e.tempo)+'</div>'; }
   var lead = e.parts ? '<div class="big">'+e.sets+' <small>series de</small></div>' : setsHTML(e.s);
-  var more = e.parts ? '<div class="parts">'+e.parts.map(function(p,i){ return '<div class="part"><b>'+'abc'[i]+'</b><span>'+esc(p.n)+'</span><em>'+p.r+'</em></div>'; }).join('')+'</div><div class="note">Hacé a, b y c seguidos en cada serie.</div>' : '';
+  var more = e.parts ? '<div class="parts">'+e.parts.map(function(p,i){ return '<div class="part"><b>'+'abc'[i]+'</b><span>'+esc(p.n)+'</span><em>'+p.r+'</em></div>'; }).join('')+'</div>' : '';
   var head = solo ? '<div class="exrow"><div style="flex:1">'+lead+'</div>'+vbtn(e.v)+'</div>'+more
                   : '<div class="exrow"><div class="exname">'+esc(e.n)+'</div>'+vbtn(e.v)+'</div>'+lead+more;
   return '<div class="ex">'+head+
@@ -476,15 +476,15 @@ function viewDay(){
     }
     if(sec.type==='strength'){
       sec.blocks.forEach(function(b,bi){
-        var id=si+'-'+bi, kind = b.length===2?'Superserie':b.length===3?'Triserie':b.length>3?'Circuito de '+b.length:'';
+        var id=si+'-'+bi, kind = 'Bloque '+(bi+1)+' · '+b.length+' ejercicios';
         var solo=b.length===1;
         h+='<div class="card'+(isDone(id)?' done':'')+'"><div class="chead"><div class="num">'+(bi+1)+'</div><div class="ctitle">'+
-          (solo?'<div class="exname">'+esc(b[0].n)+'</div>':'<div class="kind">'+kind+'</div><div class="note">Hacelos seguidos, uno tras otro</div>')+'</div>'+checkBtn(id)+'</div>'+
+          (solo?'<div class="exname">'+esc(b[0].n)+'</div>':'<div class="kind">'+kind+'</div>')+'</div>'+checkBtn(id)+'</div>'+
           b.map(function(e){ return exHTML(e,solo); }).join('')+'</div>';
       });
     }
     if(sec.type==='circuit'){
-      h+='<div class="card"><div class="circ-info"><b>'+sec.rounds+' rondas.</b> '+sec.work+' s de trabajo y '+sec.rest+' s de descanso.</div><div class="wlist">'+
+      h+='<div class="card"><div class="circ-info"><b>'+sec.rounds+' rondas.</b> '+sec.work+' s de trabajo y '+sec.rest+' s de descanso entre rondas.</div><div class="wlist">'+
         sec.items.map(function(it){ return '<div class="witem"><div class="exname">'+esc(it.n)+'</div><span class="wdose">'+sec.work+' s</span>'+vbtn(it.v)+'</div>'; }).join('')+'</div>'+
         '<button class="go" data-act="circ" data-id="'+si+'">'+IC.play+'Empezar circuito con cronómetro</button><div class="rounds">';
       for(var r=0;r<sec.rounds;r++){ var rid=si+'-r'+r; h+='<button class="round'+(isDone(rid)?' on':'')+'" data-act="tog" data-id="'+rid+'">Ronda '+(r+1)+'</button>'; }
@@ -511,13 +511,11 @@ function viewGuide(){
     '<h2>Términos</h2>'+
     g('Ascendente','Vas de menor a mayor peso. Descansá 2 a 3 minutos por serie.')+
     g('Descendente','Vas de mayor a menor peso. Descansá 2 a 3 minutos por serie.')+
-    g('Superserie / triserie','Dos o tres ejercicios seguidos, sin descanso entre ellos. Descansás al terminar el bloque.')+
-    g('Fase concéntrica','Cuando el músculo se contrae (por ejemplo, al subir el peso en un curl).')+
-    g('Fase excéntrica','Cuando el músculo se alarga (al bajar el peso).')+
-    g('Al fallo','Hacé repeticiones hasta que no puedas hacer una más con buena técnica.')+
+    g('Fase concéntrica o positiva','Es aquella en la que el músculo se contrae.')+
+    g('Fase excéntrica o negativa','Es aquella en la que el músculo se alarga.')+
     g('Repeticiones y peso','Más repeticiones = menos peso. Menos repeticiones = más peso.')+
-    '<div class="gitem"><b>Tempo (ejemplo 4.0.1.1)</b><p>Controla la velocidad de cada repetición.</p><div class="tempo">'+
-      '<div><b>4</b>s bajando</div><div><b>0</b>s pausa abajo</div><div><b>1</b>s subiendo</div><div><b>1</b>s apretando arriba</div></div></div>'+
+    '<div class="gitem"><b>Tempo (ejemplo 4.0.1.1)</b><p>Controla la velocidad a la que se realiza un ejercicio.</p><div class="tempo">'+
+      '<div><b>4</b>bajás el peso en 4 s</div><div><b>0</b>no descansás al estirar</div><div><b>1</b>subís el peso en 1 s</div><div><b>1</b>parás 1 s al contraerlo</div></div></div>'+
     '<h2>Programa</h2><button class="go" style="width:100%;margin:0" data-act="pick">'+IC.swap+'Cambiar de programa</button>'+
     '</div>';
   function g(t,x){ return '<div class="gitem"><b>'+t+'</b><p>'+x+'</p></div>'; }
@@ -589,8 +587,7 @@ function circuitQueue(sec,si){
     var w={kind:'work',label:'Ronda '+(r+1)+' de '+sec.rounds,what:it.n,secs:sec.work};
     if(i===n-1) w.mark={day:doneKey(),id:si+'-r'+r};
     q.push(w);
-    var last = r===sec.rounds-1 && i===n-1;
-    if(!last) q.push({kind:'rest',label:'Descanso',what:'Prepará: '+sec.items[(i+1)%n].n,secs:sec.rest});
+    if(i===n-1 && r<sec.rounds-1) q.push({kind:'rest',label:'Descanso entre rondas',what:'Prepará: '+sec.items[0].n,secs:sec.rest});
   });
   return q;
 }
