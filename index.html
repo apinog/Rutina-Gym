@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mi rutina</title>
+<meta name="theme-color" content="#F6F1EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17120F" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mi rutina">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#F6F1EC;--card:#FFFFFF;--ink:#2B211C;--muted:#85766C;--line:#E9DED5;
+  --accent:#8C5A44;--accent-ink:#FFFFFF;--soft:#F1E3D9;--soft-ink:#6E4532;
+  --ok:#3F8455;--ok-soft:#E1F0E5;--warm:#C9853C;--warm-soft:#F8EAD8;
+  --blue:#4F6FA8;--blue-soft:#E4EAF5;
+  --shadow:0 1px 2px rgba(60,40,30,.06),0 4px 14px rgba(60,40,30,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17120F;--card:#221B17;--ink:#F3ECE6;--muted:#A8988D;--line:#382D27;
+    --accent:#D59A7B;--accent-ink:#1E1511;--soft:#3A2A22;--soft-ink:#F0C9B4;
+    --ok:#7CC08E;--ok-soft:#203528;--warm:#E2A766;--warm-soft:#3A2D1C;
+    --blue:#93AEDD;--blue-soft:#1F2A3D;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink)}
+body{font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit}
+
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:560px;margin:0 auto}
+header{padding:calc(env(safe-area-inset-top) + 10px) 16px 6px;flex:none}
+.top{display:flex;align-items:center;gap:10px}
+.prog{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--soft);color:var(--soft-ink);font-size:14px;font-weight:600}
+.prog svg{width:14px;height:14px}
+.spacer{flex:1}
+.iconbtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:var(--shadow);border:1px solid var(--line)}
+.iconbtn svg{width:20px;height:20px}
+h1{font-size:30px;line-height:1.1;margin:12px 0 2px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:15px}
+
+#days{flex:none;display:flex;gap:8px;padding:10px 16px 12px;overflow-x:auto;scrollbar-width:none}
+#days::-webkit-scrollbar{display:none}
+.day{flex:1 0 62px;min-height:62px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative}
+.day b{font-size:20px;line-height:1}
+.day span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.day.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.day.on span{color:var(--accent-ink);opacity:.85}
+.day i{position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+
+#view{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px 24px;overscroll-behavior:contain}
+
+.progress{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.bar{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar div{height:100%;background:var(--ok);border-radius:99px;transition:width .3s}
+.progress small{font-size:14px;color:var(--muted);font-weight:600;white-space:nowrap}
+
+.sec{margin:18px 0 8px;display:flex;align-items:baseline;gap:8px}
+.sec h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0;color:var(--muted)}
+.sec .time{font-size:13px;color:var(--muted)}
+.sec .time:before{content:"·";margin-right:8px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden;transition:opacity .2s}
+.card.done{opacity:.55}
+.card.done .exname{text-decoration:line-through;text-decoration-color:var(--muted)}
+.chead{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
+.num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--soft-ink);display:grid;place-items:center;font-weight:700;font-size:16px}
+.ctitle{flex:1;min-width:0}
+.ctitle .kind{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm)}
+.check{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:transparent;transition:all .15s}
+.check svg{width:22px;height:22px}
+.done .check{background:var(--ok);border-color:var(--ok);color:#fff}
+
+.ex{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.ex + .ex{border-top:1px dashed var(--line)}
+.exrow{display:flex;align-items:center;gap:10px}
+.exname{flex:1;font-size:18px;font-weight:600;line-height:1.25}
+.vid{flex:none;display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:14px;font-weight:600;text-decoration:none}
+.vid svg{width:14px;height:14px}
+.sets{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.set{min-width:44px;padding:7px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);text-align:center;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.set small{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
+.big{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.big small{font-size:15px;font-weight:600;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{padding:5px 10px;border-radius:999px;font-size:13px;font-weight:700;background:var(--warm-soft);color:var(--warm);display:inline-flex;align-items:center;gap:4px}
+.tag svg{width:13px;height:13px}
+.explain{font-size:15px;color:var(--ink);background:var(--warm-soft);border-radius:12px;padding:10px 12px;display:none}
+.explain.on{display:block}
+.note{font-size:15px;color:var(--muted)}
+.alt{font-size:15px;background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.alt div{flex:1}
+.parts{display:flex;flex-direction:column;gap:6px}
+.part{display:flex;gap:10px;align-items:center;font-size:15px}
+.part b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--soft);color:var(--soft-ink);display:grid;place-items:center;font-size:13px}
+.part span{flex:1}
+.part em{font-style:normal;font-weight:800;font-size:17px}
+
+.wlist{padding:6px 14px 14px}
+.witem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.witem:last-child{border-bottom:0}
+.witem .exname{font-size:17px}
+.wdose{font-weight:700;color:var(--soft-ink);white-space:nowrap}
+
+.circ-info{margin:12px 14px 0;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:15px}
+.rounds{display:flex;gap:8px;padding:0 14px 14px}
+.round{flex:1;height:44px;border-radius:12px;border:2px solid var(--line);font-weight:700;font-size:15px}
+.round.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.go{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 14px 14px;height:48px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;width:calc(100% - 28px)}
+.go svg{width:18px;height:18px}
+
+.finish{text-align:center;padding:22px 16px;margin-top:14px;border-radius:20px;background:var(--ok-soft);color:var(--ok);font-weight:700}
+.finish p{margin:4px 0 0;font-weight:500;color:var(--ink)}
+.reset{display:block;margin:18px auto 0;color:var(--muted);font-size:15px;text-decoration:underline;padding:10px}
+
+/* Timer bar */
+#timer{flex:none;background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(env(safe-area-inset-bottom) + 10px)}
+.tidle{display:flex;align-items:center;gap:8px}
+.tidle .lbl{font-size:14px;color:var(--muted);font-weight:600;margin-right:2px}
+.tbtn{flex:1;height:46px;border-radius:14px;background:var(--bg);border:1px solid var(--line);font-weight:700;font-size:16px}
+.trun{display:flex;align-items:center;gap:12px}
+.ring{flex:none;width:58px;height:58px;position:relative}
+.ring svg{width:58px;height:58px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:19px;font-variant-numeric:tabular-nums}
+.tinfo{flex:1;min-width:0}
+.tinfo .phase{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.tinfo .what{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tinfo .next{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stop{flex:none;height:44px;padding:0 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-weight:700}
+.work .phase{color:var(--accent)} .rest .phase{color:var(--ok)}
+
+/* Program picker */
+.pick{padding-top:calc(env(safe-area-inset-top) + 28px)}
+.pick h1{font-size:32px;margin-top:0}
+.pcard{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px;margin-top:14px;box-shadow:var(--shadow)}
+.pcard.on{border-color:var(--accent)}
+.pcard .lvl{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--soft);color:var(--soft-ink)}
+.pcard h3{font-size:24px;margin:10px 0 4px}
+.pcard p{margin:0;color:var(--muted);font-size:15px}
+.pdays{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.pdays span{font-size:13px;padding:5px 9px;border-radius:10px;background:var(--bg);font-weight:600}
+.hint{color:var(--muted);font-size:14px;text-align:center;margin:18px 0 0}
+
+/* Guide */
+.guide h2{font-size:22px;margin:22px 0 10px}
+.gitem{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:8px}
+.gitem b{display:block;margin-bottom:2px}
+.gitem p{margin:0;color:var(--muted);font-size:15px}
+.tempo{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.tempo div{background:var(--bg);border-radius:10px;padding:8px 4px;text-align:center;font-size:12px;color:var(--muted)}
+.tempo div b{font-size:22px;color:var(--ink);margin:0}
+.back{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--accent);padding:8px 0}
+.back svg{width:18px;height:18px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ---------- Datos de los programas ----------
+// v: video de YouTube (id o id&t=...). Las series van como texto, tal como vienen en el PDF.
+var ESC = 'Ehcq3j7o8HA'; // Escaladores (el enlace del Mes 1 estaba roto; es el video del Mes 3)
+var CIRC_HOMBRO = [
+  {n:'Russian twists con peso', v:'QjGs4_T8mzw'},
+  {n:'Jumping jacks', v:'yg3KQQn3QWg'},
+  {n:'Plank to push up', v:'56vUOad6Irs'},
+  {n:'High knees', v:'DfjpR6dzLVg'}
+];
+function circ(items){ return {type:'circuit', title:'Circuito metabólico', time:'10–12 min', rounds:3, work:30, rest:15, items:items}; }
+
+var PROGRAMS = {
+  m1: {
+    name:'Mes 1', level:'Inicial',
+    desc:'Calentamiento, fuerza y un circuito para cerrar. Ideal para arrancar.',
+    days:[
+      {focus:'Piernas', sections:[
+        {type:'warm', title:'Calentamiento', time:'7 min', items:[
+          {n:'Trotar en banda', d:'3 min'},
+          {n:'Sentadilla sin peso', d:'2 × 15'},
+          {n:'Balanceo de pierna', d:'30 s por pierna', v:'8h99EJRmPNs'},
+          {n:'Desplantes caminando', d:'1 min', v:'z2D_pzoCMg8'}
+        ]},
+        {type:'strength', title:'Fuerza', time:'35–40 min', blocks:[
+          [{n:'Sentadilla libre con barra', v:'xkZ7zLnYkAA', s:['20','15','12','10']}],
+          [{n:'Press de piernas con ambas piernas', v:'VljDsFudTok', s:['20','15','12','12']}],
+          [{n:'Desplantes caminando con mancuerna', v:'e51HQZS92eQ', s:['12/12','12/12','12/12','12/12']}],
+          [{n:'Extensión de cuádriceps con ambas piernas', v:'2Hg2nb1lrHA&t=3s', s:['20','15','12','10']}],
+          [{n:'Peso muerto con mancuerna', s:['15','15','15']}]
+        ]},
+        circ([
+          {n:'Sentadilla con salto', v:'IiHH0EWo8-k'},
+          {n:'Step ups rápidos', v:'wWyyJZICuOI'},
+          {n:'Burpees', v:'Uy2nUNX38xE'},
+          {n:'Escaladores', v:ESC}
+        ])
+      ]},
+      {focus:'Hombros', sections:[
+        {type:'warm', title:'Calentamiento', time:'7 min', items:[
+          {n:'Rotaciones de hombro con banda', d:'2 × 20'},
+          {n:'Plancha frontal a lateral', d:'3 × 30 s', v:'gOXddfbCY7E'}
+        ]},
+        {type:'strength', title:'Fuerza', time:'35–40 min', blocks:[
+          [{n:'Press militar con mancuernas', v:'qBIrcQAdm_k', s:['20','15','12','10']}],
+          [{n:'Elevación lateral sentado', v:'dT6Q3NHtSjw', s:['15','15','15']}],
+          [{n:'Elevación frontal con mancuerna', v:'0CL1dUWlTAM', s:['15','15','15','15']}],
+          [{n:'Face pull', v:'CruifQcSALU', s:['15','15','15']}],
+          [{n:'Elevaciones posteriores con mancuerna', v:'zhovOZFeFL0', s:['20','20','20','20']}],
+          [{n:'Rear delt cable fly', v:'06Zpa1iygoU', s:['15','15','15']}]
+        ]},
+        circ(CIRC_HOMBRO)
+      ]},
+      {focus:'Pecho y tríceps', sections:[
+        {type:'warm', title:'Calentamiento', time:'7 min', items:[
+          {n:'Rotaciones de brazos', d:'2 × 20'},
+          {n:'Puentes de glúteo sin peso'}
+        ]},
+        {type:'strength', title:'Fuerza', time:'35–40 min', blocks:[
+          [{n:'Press de banco plano', v:'ICaZxO7RmKs', s:['15','15','15','15']}],
+          [{n:'Extensión de tríceps acostado', v:'C3k_8hrur7Q', s:['15','15','15']}],
+          [{n:'Press de pecho inclinado con mancuernas', v:'PYEOeF2zIwc', s:['15','15','15','15']}],
+          [{n:'Push down con cuerda', v:'vPpezjmMzDs', s:['15','15','15']}],
+          [{n:'Aperturas en polea', v:'MgDmL1TVt2A', s:['15','15','15'], note:'Sostené 3 segundos en la fase concéntrica.'}],
+          [{n:'Extensión de tríceps agarre supino', v:'cvYv73XUmmA', s:['15','15','15']}],
+          [{n:'Aperturas en banco inclinado', v:'bhRTIO31e-E', s:['15','15','15','15']}]
+        ]},
+        circ(CIRC_HOMBRO)
+      ]},
+      {focus:'Espalda y bíceps', sections:[
+        {type:'warm', title:'Calentamiento', time:'7 min', items:[
+          {n:'Estiramiento de espalda', d:'2 × 15', v:'6xcQx67IkmA'},
+          {n:'Plancha', d:'3 × 30 s'}
+        ]},
+        {type:'strength', title:'Fuerza', time:'35–40 min', blocks:[
+          [{n:'Remo con mancuerna', v:'S7Ag2noyerU', s:['15','15','15','15']}],
+          [{n:'Curl de bíceps con mancuerna', v:'WrpQYs_n_Pw', s:['15','15','15','15']}],
+          [{n:'Jalón con barra abierto en máquina', v:'ybba7wrlj3U', s:['15','15','15']}],
+          [{n:'Curl de bíceps martillo de pie', v:'KJCvFBsV1ew&t=22s', s:['15','15','15']}],
+          [{n:'Remo barra T', v:'ALpHXAFIpDc', s:['15','15','15','15']}],
+          [{n:'Spider curl', v:'nvufDW-MSQk', s:['20','20','20']}]
+        ]},
+        circ([
+          {n:'Burpees', v:'Uy2nUNX38xE'},
+          {n:'Escaladores', v:ESC},
+          {n:'Jump rope'},
+          {n:'Gusanos', v:'KVMvqD0Lq3c'}
+        ])
+      ]}
+    ]
+  },
+  m3: {
+    name:'Mes 3', level:'Avanzado',
+    desc:'Superseries: ejercicios que se hacen seguidos, uno tras otro.',
+    days:[
+      {focus:'Pecho, espalda y abdomen', sections:[
+        {type:'strength', title:'Rutina', blocks:[
+          [{n:'Press de banco inclinado', v:'sNXrm1GjfH8', s:['8','10','12'], tempo:'4.0.1.1'},
+           {n:'Pullover con cuerda', v:'FRw-IvGqOgE', s:['15','15','15']}],
+          [{n:'Apertura con mancuerna', v:'qQEacVB2DWI', s:['10-10-10','10-10-10','10-10-10'], mode:'asc'},
+           {n:'Jalón al frente abierto', v:'1TOmz-GOO-k', s:['15','12','10'], tempo:'4.2.1.1'}],
+          [{n:'Cruce con poleas altas', v:'osSD-IqKFlw', s:['8','10','12'], tempo:'4.2.1.1'},
+           {n:'Jalones al frente con triángulo', v:'cOh1Wmc8HLM', s:['15','15','15']}],
+          [{n:'Cruce con poleas bajas', v:'JNVGQZm7dQU', s:['8','10','12'], tempo:'4.2.1.1'},
+           {n:'Remo boca abajo inclinado con barra', v:'Avc8zdLS1js', s:['10-10-10','10-10-10','10-10-10'], mode:'asc'}],
+          [{n:'Elevación de piernas colgado', v:'fHKSp6K8ct8', s:['30','30','30'],
+            alt:{n:'Si no podés hacerlo colgado, cambialo por elevación de piernas en máquina de fondos.', v:'tJyijnNCaJM'}},
+           {n:'Impulso de cadera', v:'1Hr1Jw07nB4', s:['30','30','30']},
+           {n:'Crunch con peso', v:'fZCaZ6I0q-A', s:['30','30','30']}]
+        ]}
+      ]},
+      {focus:'Piernas', sections:[
+        {type:'strength', title:'Rutina', blocks:[
+          [{n:'Sentadilla con barra libre', v:'xkZ7zLnYkAA', s:['15','12','10'], mode:'desc'}],
+          [{n:'Desplante búlgaro con mancuerna', v:'xQJhtAodjhw', s:['12/pierna','12/pierna','12/pierna']}],
+          [{n:'Press de piernas', v:'VljDsFudTok', s:['10-10-10','10-10-10','10-10-10'], mode:'asc'}],
+          [{n:'Extensión de cuádriceps', v:'2Hg2nb1lrHA&t=3s', sets:3, parts:[
+            {n:'Movimiento normal', r:'15'},
+            {n:'Manteniendo 2 s por repetición en la fase concéntrica', r:'12'},
+            {n:'Subiendo a 5 tempos', r:'12'}]}],
+          [{n:'Pantorrilla de pie', v:'m5wiDqvEeTE', s:['25','25','25']}],
+          [{n:'Pantorrillas en prensa', v:'E8pYOnYT880', s:['20','20','20']}]
+        ]}
+      ]},
+      {focus:'Brazos', sections:[
+        {type:'strength', title:'Rutina', blocks:[
+          [{n:'Pushdown con barra Z', v:'JbHhZkGRpnI', s:['12','12','12'], tempo:'4.2.1.1'},
+           {n:'Curl acostado con barra Z en polea', v:'RAn7sh66NVk', s:['15','15','15']},
+           {n:'Escaladores', v:ESC, s:['20','20','20']}],
+          [{n:'Fondos de tríceps', v:'OzxCO_mSyXk', s:['Al fallo','Al fallo','Al fallo']},
+           {n:'Curl inclinado con mancuernas', v:'puOvayHwCuo', s:['10','10','10'], tempo:'4.1.4.0'},
+           {n:'Swings con kettlebell', s:['15','15','15']}],
+          [{n:'Extensión con mecate detrás de la cabeza', v:'ywX7NgqG9EI', s:['15','12','10']},
+           {n:'Curl concentrado en polea', v:'ZMrmxS8sFfA', s:['15','12','10']},
+           {n:'Burpees', v:'auBLPXO8Fww', s:['12','12','12']}]
+        ]}
+      ]},
+      {focus:'Hombros y abdomen', sections:[
+        {type:'strength', title:'Rutina', blocks:[
+          [{n:'Press militar en Smith', v:'tbV7vk0ipSU', s:['10-10-10-al fallo','10-10-10-al fallo','10-10-10-al fallo'], mode:'asc'}],
+          [{n:'Laterales a una mano en polea', v:'F1eHYvFUSmc', s:['15/15','15/15','15/15']},
+           {n:'Frontales a una mano en polea', v:'nfdoTDBFRDU', s:['20','20','20']}],
+          [{n:'Laterales boca abajo en banco inclinado, palmas invertidas', v:'y9Z8C38gQPM', s:['15','15','15']}],
+          [{n:'Elevaciones de piernas acostado', v:'Wp4BlxcFTkE', s:['25','25','25']},
+           {n:'Crunch laterales', v:'4sk9Z1Jbxkc', s:['25','25','25']},
+           {n:'Hipopresivos', v:'OP5QOQ7Kw-I', s:['20 s','20 s','20 s']},
+           {n:'Planchas', v:'61A2oTh10V8&t=34s', s:['1 min','1 min','1 min']}]
+        ]}
+      ]},
+      {focus:'Femoral y glúteo', sections:[
+        {type:'strength', title:'Rutina', blocks:[
+          [{n:'Peso muerto con barra', v:'kN82vxbwpRw', s:['12','10','8']}],
+          [{n:'Flexión de piernas acostado', v:'r-ybWBx0zWU', sets:3, parts:[
+            {n:'Movimiento normal', r:'15'},
+            {n:'Manteniendo 2 s por repetición en la fase concéntrica', r:'12'},
+            {n:'Subiendo a 4 tempos', r:'12'}]}],
+          [{n:'Levantamiento de cadera', v:'Oo21HQ7vJOw', s:['12','12','12']}],
+          [{n:'Abducción en máquina', v:'A5Bz9bSPKUA&t=3s', s:['10-10-10','10-10-10','10-10-10'], mode:'asc'}],
+          [{n:'Patada en polea', v:'RR0DCz8UtKo', s:['12/pierna','12/pierna','12/pierna']}],
+          [{n:'Pantorrilla de pie', v:'m5wiDqvEeTE', s:['25','25','25']}]
+        ]}
+      ]}
+    ]
+  }
+};
+var SHORT = {'Pecho, espalda y abdomen':'Pecho','Pecho y tríceps':'Pecho','Espalda y bíceps':'Espalda','Hombros y abdomen':'Hombros','Femoral y glúteo':'Glúteo'};
+
+var EXPLAIN = {
+  asc:'<b>Ascendente:</b> vas de menor a mayor peso en cada tramo (10 + 10 + 10), sin descansar entre tramos. Descansá 2 a 3 minutos al terminar la serie.',
+  desc:'<b>Descendente:</b> vas de mayor a menor peso. Descansá 2 a 3 minutos entre series.'
+};
+
+// ---------- Estado ----------
+var KEY = 'mi_rutina_v1';
+var S = load();
+var screen = S.prog ? 'day' : 'pick';
+function load(){
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
+  d = d || {};
+  return {prog:d.prog||null, day:d.day||{}, done:d.done||{}};
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function today(){ var t=new Date(); return t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate(); }
+function P(){ return PROGRAMS[S.prog]; }
+function curDay(){ var i=S.day[S.prog]||0; return Math.min(i, P().days.length-1); }
+function doneKey(){ return S.prog+'-'+curDay(); }
+function doneSet(){
+  var k=doneKey(), d=S.done[k];
+  if(!d || d.date!==today()) return {};
+  return d.ids;
+}
+function isDone(id){ return !!doneSet()[id]; }
+function toggle(id){
+  var k=doneKey(), d=S.done[k];
+  if(!d || d.date!==today()) d = S.done[k] = {date:today(), ids:{}};
+  if(d.ids[id]) delete d.ids[id]; else d.ids[id]=1;
+  save();
+}
+function dayFinishedToday(i){
+  var d=S.done[S.prog+'-'+i];
+  if(!d || d.date!==today()) return false;
+  return countUnits(P().days[i]).every(function(id){ return d.ids[id]; });
+}
+function countUnits(day){
+  var ids=[];
+  day.sections.forEach(function(sec,si){
+    if(sec.type==='warm') ids.push(si+'-w');
+    if(sec.type==='strength') sec.blocks.forEach(function(b,bi){ ids.push(si+'-'+bi); });
+    if(sec.type==='circuit') for(var r=0;r<sec.rounds;r++) ids.push(si+'-r'+r);
+  });
+  return ids;
+}
+
+// ---------- Íconos ----------
+var IC = {
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg>',
+  swap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>'
+};
+
+// ---------- Ayudantes de texto ----------
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function vurl(v){ return 'https://www.youtube.com/watch?v='+v; }
+function vbtn(v){ return v ? '<a class="vid" href="'+vurl(v)+'" target="_blank" rel="noopener">'+IC.play+'Video</a>' : ''; }
+function rep(x){
+  if(/^\d+\/\d+$/.test(x)) return x.split('/')[0]+' <small>c/lado</small>';
+  if(/\/pierna$/.test(x)) return x.split('/')[0]+' <small>c/pierna</small>';
+  if(/^10-10-10-al fallo$/.test(x)) return '10+10+10+<small>fallo</small>';
+  if(/^\d+(-\d+)+$/.test(x)) return x.split('-').join('+');
+  return esc(x);
+}
+function setsHTML(s){
+  var same = s.every(function(x){ return x===s[0]; });
+  if(same) return '<div class="big">'+s.length+' <small>series de</small> '+rep(s[0])+'</div>';
+  return '<div class="sets">'+s.map(function(x,i){ return '<div class="set"><small>Serie '+(i+1)+'</small>'+rep(x)+'</div>'; }).join('')+'</div>';
+}
+function tempoText(t){
+  var p=t.split('.');
+  return '<b>Tempo '+t+':</b> bajá el peso en '+p[0]+' s, pausa de '+p[1]+' s abajo, subí en '+p[2]+' s'+(p[3]!=='0'?', y apretá '+p[3]+' s arriba.':' y seguí sin pausa.');
+}
+var uid=0;
+function exHTML(e,solo){
+  var tags='', exps='';
+  if(e.mode){ var id='x'+(uid++); tags+='<button class="tag" data-act="exp" data-id="'+id+'">'+(e.mode==='asc'?IC.arrow+'Ascendente':IC.down+'Descendente')+'</button>'; exps+='<div class="explain" id="'+id+'">'+EXPLAIN[e.mode]+'</div>'; }
+  if(e.tempo){ var id2='x'+(uid++); tags+='<button class="tag" data-act="exp" data-id="'+id2+'">'+IC.clock+'Tempo '+e.tempo+'</button>'; exps+='<div class="explain" id="'+id2+'">'+tempoText(e.tempo)+'</div>'; }
+  var lead = e.parts ? '<div class="big">'+e.sets+' <small>series de</small></div>' : setsHTML(e.s);
+  var more = e.parts ? '<div class="parts">'+e.parts.map(function(p,i){ return '<div class="part"><b>'+'abc'[i]+'</b><span>'+esc(p.n)+'</span><em>'+p.r+'</em></div>'; }).join('')+'</div><div class="note">Hacé a, b y c seguidos en cada serie.</div>' : '';
+  var head = solo ? '<div class="exrow"><div style="flex:1">'+lead+'</div>'+vbtn(e.v)+'</div>'+more
+                  : '<div class="exrow"><div class="exname">'+esc(e.n)+'</div>'+vbtn(e.v)+'</div>'+lead+more;
+  return '<div class="ex">'+head+
+    (tags?'<div class="tags">'+tags+'</div>'+exps:'')+
+    (e.note?'<div class="note">'+esc(e.note)+'</div>':'')+
+    (e.alt?'<div class="alt"><div>'+esc(e.alt.n)+'</div>'+vbtn(e.alt.v)+'</div>':'')+
+    '</div>';
+}
+function checkBtn(id){ return '<button class="check" data-act="tog" data-id="'+id+'" aria-label="Marcar como hecho">'+IC.check+'</button>'; }
+
+// ---------- Pantallas ----------
+function viewPick(){
+  var h='<div id="view" class="pick"><h1>¿Qué programa vas a seguir?</h1><div class="sub">Elegilo una vez. Podés cambiarlo cuando quieras desde arriba.</div>';
+  Object.keys(PROGRAMS).forEach(function(k){
+    var p=PROGRAMS[k];
+    h+='<button class="pcard'+(S.prog===k?' on':'')+'" data-act="prog" data-id="'+k+'"><span class="lvl">'+p.level+'</span><h3>'+p.name+' · '+p.days.length+' días</h3><p>'+p.desc+'</p><div class="pdays">'+
+      p.days.map(function(d,i){ return '<span>'+(i+1)+'. '+d.focus+'</span>'; }).join('')+'</div></button>';
+  });
+  if(S.prog) h+='<p class="hint"><button class="back" data-act="home">'+IC.back+'Volver sin cambiar</button></p>';
+  return h+'</div>';
+}
+
+function viewDay(){
+  var p=P(), di=curDay(), day=p.days[di];
+  uid=0;
+  var units=countUnits(day), done=units.filter(isDone).length;
+  var h='<header><div class="top"><button class="prog" data-act="pick">'+IC.swap+p.name+' · '+p.level+'</button><div class="spacer"></div><button class="iconbtn" data-act="guide" aria-label="Indicaciones">'+IC.info+'</button></div>'+
+    '<h1>Día '+(di+1)+' · '+day.focus+'</h1></header>';
+  h+='<nav id="days">'+p.days.map(function(d,i){
+    return '<button class="day'+(i===di?' on':'')+'" data-act="day" data-id="'+i+'">'+(dayFinishedToday(i)?'<i></i>':'')+'<span>Día</span><b>'+(i+1)+'</b><span>'+(SHORT[d.focus]||d.focus)+'</span></button>';
+  }).join('')+'</nav>';
+  h+='<div id="view">';
+  h+='<div class="progress"><div class="bar"><div style="width:'+Math.round(done/units.length*100)+'%"></div></div><small>'+done+' de '+units.length+'</small></div>';
+
+  day.sections.forEach(function(sec,si){
+    h+='<div class="sec"><h2>'+sec.title+'</h2>'+(sec.time?'<span class="time">'+sec.time+'</span>':'')+'</div>';
+    if(sec.type==='warm'){
+      var id=si+'-w';
+      h+='<div class="card'+(isDone(id)?' done':'')+'"><div class="chead"><div class="ctitle"><div class="kind">Para entrar en calor</div></div>'+checkBtn(id)+'</div><div class="wlist">'+
+        sec.items.map(function(it){ return '<div class="witem"><div class="exname">'+esc(it.n)+'</div>'+(it.d?'<span class="wdose">'+it.d+'</span>':'')+vbtn(it.v)+'</div>'; }).join('')+'</div></div>';
+    }
+    if(sec.type==='strength'){
+      sec.blocks.forEach(function(b,bi){
+        var id=si+'-'+bi, kind = b.length===2?'Superserie':b.length===3?'Triserie':b.length>3?'Circuito de '+b.length:'';
+        var solo=b.length===1;
+        h+='<div class="card'+(isDone(id)?' done':'')+'"><div class="chead"><div class="num">'+(bi+1)+'</div><div class="ctitle">'+
+          (solo?'<div class="exname">'+esc(b[0].n)+'</div>':'<div class="kind">'+kind+'</div><div class="note">Hacelos seguidos, uno tras otro</div>')+'</div>'+checkBtn(id)+'</div>'+
+          b.map(function(e){ return exHTML(e,solo); }).join('')+'</div>';
+      });
+    }
+    if(sec.type==='circuit'){
+      h+='<div class="card"><div class="circ-info"><b>'+sec.rounds+' rondas.</b> '+sec.work+' s de trabajo y '+sec.rest+' s de descanso.</div><div class="wlist">'+
+        sec.items.map(function(it){ return '<div class="witem"><div class="exname">'+esc(it.n)+'</div><span class="wdose">'+sec.work+' s</span>'+vbtn(it.v)+'</div>'; }).join('')+'</div>'+
+        '<button class="go" data-act="circ" data-id="'+si+'">'+IC.play+'Empezar circuito con cronómetro</button><div class="rounds">';
+      for(var r=0;r<sec.rounds;r++){ var rid=si+'-r'+r; h+='<button class="round'+(isDone(rid)?' on':'')+'" data-act="tog" data-id="'+rid+'">Ronda '+(r+1)+'</button>'; }
+      h+='</div></div>';
+    }
+  });
+
+  if(done===units.length){
+    var next=(di+1)%p.days.length;
+    h+='<div class="finish">¡Listo, día terminado! 💪<p>La próxima vez te toca el Día '+(next+1)+' · '+p.days[next].focus+'.</p></div>';
+  }
+  if(done>0) h+='<button class="reset" data-act="reset">Desmarcar todo</button>';
+  h+='</div><div id="timer"></div>';
+  return h;
+}
+
+function viewGuide(){
+  return '<header><button class="back" data-act="home">'+IC.back+'Volver a la rutina</button><h1>Indicaciones</h1></header><div id="view" class="guide">'+
+    g('Entrenos','5 días por semana.')+
+    g('Cardio','45 minutos, 3 veces por semana. Puede ser después de entrenar o en otro momento.')+
+    g('Pasos','10,000 pasos por día.')+
+    g('Descanso entre series','35 a 45 segundos. En dropsets, hasta 90 segundos.')+
+    g('Cargas','Subí el peso poco a poco cada semana, sin sacrificar la técnica.')+
+    '<h2>Términos</h2>'+
+    g('Ascendente','Vas de menor a mayor peso. Descansá 2 a 3 minutos por serie.')+
+    g('Descendente','Vas de mayor a menor peso. Descansá 2 a 3 minutos por serie.')+
+    g('Superserie / triserie','Dos o tres ejercicios seguidos, sin descanso entre ellos. Descansás al terminar el bloque.')+
+    g('Fase concéntrica','Cuando el músculo se contrae (por ejemplo, al subir el peso en un curl).')+
+    g('Fase excéntrica','Cuando el músculo se alarga (al bajar el peso).')+
+    g('Al fallo','Hacé repeticiones hasta que no puedas hacer una más con buena técnica.')+
+    g('Repeticiones y peso','Más repeticiones = menos peso. Menos repeticiones = más peso.')+
+    '<div class="gitem"><b>Tempo (ejemplo 4.0.1.1)</b><p>Controla la velocidad de cada repetición.</p><div class="tempo">'+
+      '<div><b>4</b>s bajando</div><div><b>0</b>s pausa abajo</div><div><b>1</b>s subiendo</div><div><b>1</b>s apretando arriba</div></div></div>'+
+    '<h2>Programa</h2><button class="go" style="width:100%;margin:0" data-act="pick">'+IC.swap+'Cambiar de programa</button>'+
+    '</div>';
+  function g(t,x){ return '<div class="gitem"><b>'+t+'</b><p>'+x+'</p></div>'; }
+}
+
+function render(){
+  var app=document.getElementById('app');
+  var y = screen==='day' && document.getElementById('view') ? document.getElementById('view').scrollTop : 0;
+  app.innerHTML = screen==='pick' ? viewPick() : screen==='guide' ? viewGuide() : viewDay();
+  if(screen==='day'){ document.getElementById('view').scrollTop = keepScroll ? y : 0; renderTimer(); }
+  keepScroll=false;
+}
+var keepScroll=false;
+
+// ---------- Cronómetro ----------
+var T = null; // {queue:[{label,what,secs,kind}], i, end}
+var actx=null;
+function beep(f,d){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    var o=actx.createOscillator(), g=actx.createGain();
+    o.frequency.value=f; o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(.25,actx.currentTime); g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);
+    o.start(); o.stop(actx.currentTime+d);
+  }catch(e){}
+}
+var wake=null;
+function startTimer(queue){
+  if(actx && actx.state==='suspended') actx.resume();
+  beep(660,.05);
+  T={queue:queue,i:0,end:Date.now()+queue[0].secs*1000,last:-1};
+  try{ navigator.wakeLock && navigator.wakeLock.request('screen').then(function(w){wake=w;}).catch(function(){}); }catch(e){}
+  tick();
+}
+function stopTimer(){ T=null; try{ wake && wake.release(); }catch(e){} wake=null; renderTimer(); }
+function tick(){
+  if(!T) return;
+  var left=Math.ceil((T.end-Date.now())/1000);
+  if(left<=0){
+    markRound(T.queue[T.i].mark);
+    T.i++;
+    if(T.i>=T.queue.length){ beep(880,.6); stopTimer(); return; }
+    beep(T.queue[T.i].kind==='work'?880:520,.35);
+    T.end=Date.now()+T.queue[T.i].secs*1000; left=T.queue[T.i].secs;
+  } else if(left<=3 && left!==T.last){ beep(600,.08); }
+  T.last=left;
+  renderTimer(left);
+  setTimeout(tick,250);
+}
+function renderTimer(left){
+  var el=document.getElementById('timer'); if(!el) return;
+  if(!T){
+    el.innerHTML='<div class="tidle"><span class="lbl">Descanso</span><button class="tbtn" data-act="rest" data-id="45">45 s</button><button class="tbtn" data-act="rest" data-id="90">90 s</button><button class="tbtn" data-act="rest" data-id="150">2½ min</button></div>';
+    return;
+  }
+  var ph=T.queue[T.i], nx=null;
+  for(var j=T.i+1;j<T.queue.length;j++) if(T.queue[j].kind==='work'){ nx=T.queue[j]; break; }
+  if(ph.kind==='rest') nx=null;
+  if(left==null) left=Math.ceil((T.end-Date.now())/1000);
+  var frac=Math.max(0,left/ph.secs), C=2*Math.PI*25;
+  var m=Math.floor(left/60), s=left%60, txt=m?m+':'+(s<10?'0':'')+s:String(left);
+  el.innerHTML='<div class="trun '+ph.kind+'"><div class="ring"><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="25" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="29" cy="29" r="25" fill="none" stroke="'+(ph.kind==='work'?'var(--accent)':'var(--ok)')+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-frac))+'"/></svg><b>'+txt+'</b></div>'+
+    '<div class="tinfo"><div class="phase">'+ph.label+'</div><div class="what">'+esc(ph.what)+'</div>'+(nx?'<div class="next">Sigue: '+esc(nx.what)+'</div>':'')+'</div>'+
+    '<button class="stop" data-act="stop">Parar</button></div>';
+}
+function circuitQueue(sec,si){
+  var q=[], n=sec.items.length;
+  for(var r=0;r<sec.rounds;r++) sec.items.forEach(function(it,i){
+    var w={kind:'work',label:'Ronda '+(r+1)+' de '+sec.rounds,what:it.n,secs:sec.work};
+    if(i===n-1) w.mark={day:doneKey(),id:si+'-r'+r};
+    q.push(w);
+    var last = r===sec.rounds-1 && i===n-1;
+    if(!last) q.push({kind:'rest',label:'Descanso',what:'Prepará: '+sec.items[(i+1)%n].n,secs:sec.rest});
+  });
+  return q;
+}
+function markRound(m){
+  if(!m || doneKey()!==m.day || isDone(m.id)) return;
+  toggle(m.id); keepScroll=true; if(screen==='day') render();
+}
+
+// ---------- Eventos ----------
+document.addEventListener('click',function(ev){
+  var b=ev.target.closest('[data-act]'); if(!b) return;
+  var id=b.getAttribute('data-id');
+  switch(b.getAttribute('data-act')){
+    case 'prog': S.prog=id; save(); screen='day'; render(); break;
+    case 'pick': screen='pick'; render(); break;
+    case 'home': screen=S.prog?'day':'pick'; render(); break;
+    case 'guide': screen='guide'; render(); break;
+    case 'day': S.day[S.prog]=+id; save(); render(); break;
+    case 'tog': toggle(id); keepScroll=true; render(); break;
+    case 'reset': delete S.done[doneKey()]; save(); keepScroll=true; render(); break;
+    case 'exp': document.getElementById(id).classList.toggle('on'); break;
+    case 'rest': startTimer([{kind:'rest',label:'Descanso',what:'Preparate para la siguiente serie',secs:+id}]); break;
+    case 'circ': startTimer(circuitQueue(P().days[curDay()].sections[+id],+id)); break;
+    case 'stop': stopTimer(); break;
+  }
+});
+
+render();
+window.__app={S:S,PROGRAMS:PROGRAMS};
+if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
