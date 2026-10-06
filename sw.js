@@ -1,5 +1,5 @@
 // Subí la versión en cada cambio para que el iPhone tome la nueva.
-const CACHE = 'mi-rutina-v1';
+const CACHE = 'mi-rutina-v2';
 const FILES = ['./', './index.html', './manifest.json', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {

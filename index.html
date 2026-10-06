@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi rutina</title>
-<meta name="theme-color" content="#F6F1EC" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17120F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" id="tc" content="#F3F4F6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -15,20 +14,27 @@
 <link rel="icon" href="icons/icon-192.png">
 <style>
 :root{
-  --bg:#F6F1EC;--card:#FFFFFF;--ink:#2B211C;--muted:#85766C;--line:#E9DED5;
-  --accent:#8C5A44;--accent-ink:#FFFFFF;--soft:#F1E3D9;--soft-ink:#6E4532;
-  --ok:#3F8455;--ok-soft:#E1F0E5;--warm:#C9853C;--warm-soft:#F8EAD8;
-  --blue:#4F6FA8;--blue-soft:#E4EAF5;
-  --shadow:0 1px 2px rgba(60,40,30,.06),0 4px 14px rgba(60,40,30,.06);
+  --bg:#F3F4F6;--card:#FFFFFF;--ink:#111318;--muted:#6B7280;--line:#E4E6EA;
+  --accent:#2563EB;--accent-ink:#FFFFFF;--soft:#E8EFFE;--soft-ink:#1D4ED8;
+  --ok:#16A34A;--ok-soft:#DCFCE7;--warm:#B45309;--warm-soft:#FEF3C7;
+  --vid:#F1F2F4;--play:#E5484D;
+  --shadow:0 1px 2px rgba(17,19,24,.05),0 4px 14px rgba(17,19,24,.05);
 }
 @media (prefers-color-scheme:dark){
-  :root{
-    --bg:#17120F;--card:#221B17;--ink:#F3ECE6;--muted:#A8988D;--line:#382D27;
-    --accent:#D59A7B;--accent-ink:#1E1511;--soft:#3A2A22;--soft-ink:#F0C9B4;
-    --ok:#7CC08E;--ok-soft:#203528;--warm:#E2A766;--warm-soft:#3A2D1C;
-    --blue:#93AEDD;--blue-soft:#1F2A3D;
-    --shadow:none;
+  :root:not([data-theme="light"]){
+  --bg:#0B0C0F;--card:#17191E;--ink:#F3F4F6;--muted:#9CA3AF;--line:#272A31;
+  --accent:#4C8DFF;--accent-ink:#FFFFFF;--soft:#16233A;--soft-ink:#A5C4FF;
+  --ok:#34C759;--ok-soft:#12301C;--warm:#F5B54A;--warm-soft:#30250F;
+  --vid:#23262D;--play:#FF5C61;
+  --shadow:none;
   }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0C0F;--card:#17191E;--ink:#F3F4F6;--muted:#9CA3AF;--line:#272A31;
+  --accent:#4C8DFF;--accent-ink:#FFFFFF;--soft:#16233A;--soft-ink:#A5C4FF;
+  --ok:#34C759;--ok-soft:#12301C;--warm:#F5B54A;--warm-soft:#30250F;
+  --vid:#23262D;--play:#FF5C61;
+  --shadow:none;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink)}
@@ -83,8 +89,8 @@ h1{font-size:30px;line-height:1.1;margin:12px 0 2px;letter-spacing:-.02em}
 .ex + .ex{border-top:1px dashed var(--line)}
 .exrow{display:flex;align-items:center;gap:10px}
 .exname{flex:1;font-size:18px;font-weight:600;line-height:1.25}
-.vid{flex:none;display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:14px;font-weight:600;text-decoration:none}
-.vid svg{width:14px;height:14px}
+.vid{flex:none;display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:var(--vid);color:var(--ink);font-size:14px;font-weight:600;text-decoration:none}
+.vid svg{width:14px;height:14px;color:var(--play)}
 .sets{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .set{min-width:44px;padding:7px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);text-align:center;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
 .set small{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
@@ -343,7 +349,7 @@ function load(){
   var d = null;
   try { d = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
   d = d || {};
-  return {prog:d.prog||null, day:d.day||{}, done:d.done||{}};
+  return {prog:d.prog||null, day:d.day||{}, done:d.done||{}, theme:d.theme||null};
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 function today(){ var t=new Date(); return t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate(); }
@@ -377,6 +383,15 @@ function countUnits(day){
   return ids;
 }
 
+// ---------- Tema claro / oscuro ----------
+function isDark(){ return S.theme ? S.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+function applyTheme(){
+  if(S.theme) document.documentElement.setAttribute('data-theme',S.theme); else document.documentElement.removeAttribute('data-theme');
+  document.getElementById('tc').setAttribute('content', isDark() ? '#0B0C0F' : '#F3F4F6');
+}
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){ applyTheme(); render(); });
+
 // ---------- Íconos ----------
 var IC = {
   play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
@@ -386,6 +401,8 @@ var IC = {
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
   down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>'
 };
 
@@ -428,7 +445,7 @@ function checkBtn(id){ return '<button class="check" data-act="tog" data-id="'+i
 
 // ---------- Pantallas ----------
 function viewPick(){
-  var h='<div id="view" class="pick"><h1>¿Qué programa vas a seguir?</h1><div class="sub">Elegilo una vez. Podés cambiarlo cuando quieras desde arriba.</div>';
+  var h='<div id="view" class="pick"><div class="top" style="margin-bottom:14px"><div class="spacer"></div><button class="iconbtn" data-act="theme" aria-label="Cambiar tema">'+(isDark()?IC.sun:IC.moon)+'</button></div><h1>¿Qué programa vas a seguir?</h1><div class="sub">Elegilo una vez. Podés cambiarlo cuando quieras desde arriba.</div>';
   Object.keys(PROGRAMS).forEach(function(k){
     var p=PROGRAMS[k];
     h+='<button class="pcard'+(S.prog===k?' on':'')+'" data-act="prog" data-id="'+k+'"><span class="lvl">'+p.level+'</span><h3>'+p.name+' · '+p.days.length+' días</h3><p>'+p.desc+'</p><div class="pdays">'+
@@ -442,7 +459,7 @@ function viewDay(){
   var p=P(), di=curDay(), day=p.days[di];
   uid=0;
   var units=countUnits(day), done=units.filter(isDone).length;
-  var h='<header><div class="top"><button class="prog" data-act="pick">'+IC.swap+p.name+' · '+p.level+'</button><div class="spacer"></div><button class="iconbtn" data-act="guide" aria-label="Indicaciones">'+IC.info+'</button></div>'+
+  var h='<header><div class="top"><button class="prog" data-act="pick">'+IC.swap+p.name+' · '+p.level+'</button><div class="spacer"></div><button class="iconbtn" data-act="theme" aria-label="Cambiar tema">'+(isDark()?IC.sun:IC.moon)+'</button><button class="iconbtn" data-act="guide" aria-label="Indicaciones">'+IC.info+'</button></div>'+
     '<h1>Día '+(di+1)+' · '+day.focus+'</h1></header>';
   h+='<nav id="days">'+p.days.map(function(d,i){
     return '<button class="day'+(i===di?' on':'')+'" data-act="day" data-id="'+i+'">'+(dayFinishedToday(i)?'<i></i>':'')+'<span>Día</span><b>'+(i+1)+'</b><span>'+(SHORT[d.focus]||d.focus)+'</span></button>';
@@ -598,6 +615,7 @@ document.addEventListener('click',function(ev){
     case 'rest': startTimer([{kind:'rest',label:'Descanso',what:'Preparate para la siguiente serie',secs:+id}]); break;
     case 'circ': startTimer(circuitQueue(P().days[curDay()].sections[+id],+id)); break;
     case 'stop': stopTimer(); break;
+    case 'theme': S.theme = isDark() ? 'light' : 'dark'; save(); applyTheme(); keepScroll=true; render(); break;
   }
 });
 
